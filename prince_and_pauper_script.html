@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>The Prince and the Pauper</title>
+<style>
+:root {
+  --prince-color: #1a3a6b;
+  --prince-bg: #e8f0ff;
+  --prince-border: #3060c0;
+  --tom-color: #6b2800;
+  --tom-bg: #fff3e0;
+  --tom-border: #c07030;
+  --both-color: #4a0080;
+  --both-bg: #f3e8ff;
+  --stage-color: #2d5a1e;
+  --gold: #c8960a;
+  --parchment: #fdf6e3;
+  --ink: #2c1810;
+  --brown-dark: #1a0a05;
+  --brown-mid: #3d1f0a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #2c1810;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── HEADER ── */
+.header {
+  width: 100%;
+  background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown-mid) 50%, var(--brown-dark) 100%);
+  border-bottom: 3px solid var(--gold);
+  padding: 16px 20px 12px;
+  text-align: center;
+  position: relative;
+}
+.header::before { content: '⚜'; color: var(--gold); font-size: 18px; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
+.header::after  { content: '⚜'; color: var(--gold); font-size: 18px; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); }
+.header h1   { color: var(--gold); font-size: clamp(16px, 3.5vw, 26px); letter-spacing: 1px; text-shadow: 0 2px 8px rgba(200,150,10,0.5); }
+.header .sub { color: #d4a96a; font-size: 13px; margin-top: 4px; font-style: italic; }
+
+/* ── MOBILE TAB BAR (hidden on PC) ── */
+.mobile-tabs {
+  display: none;
+  background: var(--brown-dark);
+  border-bottom: 2px solid var(--gold);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.mobile-tab-btn {
+  flex: 1;
+  padding: 12px 6px;
+  border: none;
+  background: transparent;
+  color: #9a7040;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: Georgia, serif;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  -webkit-appearance: none;
+}
+.mobile-tab-btn.active { color: var(--gold); border-bottom: 3px solid var(--gold); background: rgba(200,150,10,0.08); }
+
+/* ── READ-ALL BAR ── */
+.readall-bar {
+  background: linear-gradient(135deg, var(--brown-dark), var(--brown-mid));
+  border-bottom: 2px solid var(--gold);
+  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+/* On mobile, pushed down by tab bar */
+.readall-bar { top: 0; }
+
+.readall-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: Georgia, serif;
+  -webkit-appearance: none;
+}
+.readall-btn.play { background: linear-gradient(135deg, #c8960a, #e8b820); color: white; box-shadow: 0 2px 6px rgba(200,150,10,0.4); }
+.readall-btn.stop { background: linear-gradient(135deg, #8b0000, #cc2020); color: white; }
+.readall-progress-wrap { flex: 1; background: rgba(255,255,255,0.15); border-radius: 10px; height: 8px; overflow: hidden; display: none; }
+.readall-progress-wrap.show { display: block; }
+.readall-progress-bar { height: 100%; background: linear-gradient(to right, var(--gold), #f0d060); border-radius: 10px; width: 0%; transition: width 0.4s; }
+.readall-status { color: #d4a96a; font-size: 12px; white-space: nowrap; display: none; min-width: 50px; text-align: right; }
+.readall-status.show { display: block; }
+
+/* ── PC LAYOUT: side by side ── */
+.pc-layout {
+  display: flex;
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  gap: 0;
+  padding: 0 12px 30px;
+}
+
+.script-col {
+  flex: 1;
+  min-width: 0;
+  background: var(--parchment);
+  border-radius: 0 0 10px 10px;
+  padding: 18px 22px;
+}
+
+.sidebar-col {
+  width: 270px;
+  flex-shrink: 0;
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sidebar-box {
+  background: var(--parchment);
+  border-radius: 10px;
+  padding: 16px;
+}
+.sidebar-box.sticky-box {
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+}
+
+/* ── MOBILE PANELS (hidden on PC) ── */
+.mobile-panel { display: none; }
+
+/* ── SHARED SCRIPT STYLES ── */
+.tts-hint { text-align: center; font-size: 12px; color: #9a7a40; font-style: italic; margin: 10px 0; padding: 5px 10px; background: rgba(200,150,10,0.08); border-radius: 6px; }
+.legend { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: bold; }
+.legend-item.prince { background: var(--prince-bg); color: var(--prince-color); border: 1.5px solid var(--prince-border); }
+.legend-item.tom    { background: var(--tom-bg);    color: var(--tom-color);    border: 1.5px solid var(--tom-border); }
+.legend-item.both   { background: var(--both-bg);   color: var(--both-color);   border: 1.5px solid #9060d0; }
+.legend-item.stage  { background: #e8f5e8;          color: var(--stage-color);  border: 1.5px solid #4a9a3a; }
+
+.section-title { color: var(--gold); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid #d4a96a; padding-bottom: 5px; margin: 18px 0 12px; font-weight: bold; }
+.setting-block { background: #f0f7ee; border-left: 4px solid #4a9a3a; border-radius: 0 8px 8px 0; padding: 9px 14px; margin-bottom: 12px; font-size: 14px; color: #1d4020; font-style: italic; }
+.setting-block strong { font-style: normal; font-size: 10px; letter-spacing: 1px; display: block; margin-bottom: 4px; color: var(--stage-color); text-transform: uppercase; }
+.characters-block { background: #fff8ee; border: 2px dashed var(--gold); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 14px; }
+.characters-block strong { font-size: 10px; letter-spacing: 1px; display: block; margin-bottom: 8px; color: var(--ink); text-transform: uppercase; }
+.char-entry { margin-bottom: 6px; line-height: 1.5; }
+.char-name-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 11px; margin-right: 4px; }
+.char-name-badge.prince { background: var(--prince-bg); color: var(--prince-color); border: 1px solid var(--prince-border); }
+.char-name-badge.tom    { background: var(--tom-bg);    color: var(--tom-color);    border: 1px solid var(--tom-border); }
+
+.line { margin-bottom: 10px; padding: 10px 12px; border-radius: 8px; line-height: 1.7; font-size: 15px; }
+.line.prince { background: var(--prince-bg); border-left: 5px solid var(--prince-border); }
+.line.tom    { background: var(--tom-bg);    border-left: 5px solid var(--tom-border); }
+.line.both   { background: var(--both-bg);   border-left: 5px solid #9060d0; text-align: center; }
+.line.stage  { background: #f0f7ee;          border-left: 5px solid #4a9a3a; font-style: italic; color: #1d4020; }
+.line.prince, .line.tom, .line.both { cursor: pointer; -webkit-user-select: none; user-select: none; transition: filter 0.1s; }
+.line.prince:hover, .line.tom:hover, .line.both:hover { filter: brightness(0.96); }
+.line.prince:active, .line.tom:active, .line.both:active { filter: brightness(0.90); }
+.line.speaking { outline: 3px solid var(--gold); outline-offset: 2px; animation: speakpulse 0.9s infinite alternate; }
+@keyframes speakpulse { from { outline-color: rgba(200,150,10,0.3); } to { outline-color: rgba(200,150,10,1); } }
+.tts-icon { float: right; font-size: 15px; opacity: 0.3; margin-left: 6px; pointer-events: none; transition: opacity 0.15s; }
+.line:hover .tts-icon { opacity: 0.8; }
+.line.speaking .tts-icon { opacity: 1; }
+
+.speaker { display: inline-block; padding: 2px 8px; border-radius: 8px; margin-bottom: 3px; margin-right: 4px; font-size: 11px; font-weight: bold; }
+.speaker.prince { background: var(--prince-color); color: white; }
+.speaker.tom    { background: var(--tom-color);    color: white; }
+.speaker.both   { background: var(--both-color);   color: white; }
+.speaker.stage  { background: var(--stage-color);  color: white; font-size: 10px; letter-spacing: 1px; }
+.stage-dir { display: block; font-style: italic; color: #3a6b30; font-size: 13px; margin-top: 2px; }
+.dialogue-text { display: block; margin-top: 3px; color: var(--ink); }
+.vk { background: rgba(200,150,10,0.2); border-bottom: 2px solid var(--gold); border-radius: 2px; font-weight: bold; cursor: pointer; padding: 0 2px; }
+.vk:hover { background: rgba(200,150,10,0.4); }
+.divider { height: 2px; background: linear-gradient(to right, transparent, var(--gold), transparent); margin: 16px 0; }
+
+/* ── VOCAB BOX ── */
+.vocab-box-title { color: var(--ink); font-size: 13px; letter-spacing: 1px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid var(--gold); padding-bottom: 6px; margin-bottom: 12px; text-align: center; }
+.vocab-search { width: 100%; padding: 8px 12px; border: 2px solid #d4a96a; border-radius: 8px; font-size: 14px; background: #fff8ee; color: var(--ink); margin-bottom: 10px; outline: none; -webkit-appearance: none; font-family: Georgia, serif; }
+.vocab-search:focus { border-color: var(--gold); }
+.vocab-list { display: flex; flex-direction: column; gap: 5px; }
+.vocab-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 7px; background: #fff8ee; border: 1.5px solid #e8d5a0; transition: all 0.15s; gap: 6px; }
+.vocab-item.highlight { background: rgba(200,150,10,0.25); border-color: var(--gold); transform: translateX(2px); }
+.vocab-en { font-weight: bold; font-size: 14px; color: var(--ink); flex: 1; }
+.vocab-kr { font-size: 13px; color: #7a5a20; text-align: right; flex: 1; }
+.vocab-speak-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px 4px; opacity: 0.4; transition: opacity 0.15s, transform 0.15s; flex-shrink: 0; line-height: 1; }
+.vocab-speak-btn:hover { opacity: 1; transform: scale(1.2); }
+.vocab-speak-btn.speaking { opacity: 1; animation: vocabpulse 0.6s infinite alternate; }
+@keyframes vocabpulse { from { transform: scale(1); } to { transform: scale(1.3); } }
+
+/* ── QUIZ BOX ── */
+.quiz-trigger-btn { display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #c8960a, #e8b820); color: white; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: bold; -webkit-appearance: none; font-family: Georgia, serif; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.quiz-trigger-btn:hover { background: linear-gradient(135deg, #a07008, #c8a010); }
+.score-badge { background: var(--both-bg); border: 2px solid #9060d0; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--both-color); text-align: center; margin-top: 10px; display: none; font-weight: bold; }
+
+/* ── QUIZ MODAL ── */
+.quiz-popup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 200; justify-content: center; align-items: center; padding: 20px; }
+.quiz-popup.show { display: flex; }
+.quiz-box { background: var(--parchment); border: 3px solid var(--gold); border-radius: 16px; padding: 24px 22px 20px; width: 100%; max-width: 360px; text-align: center; position: relative; }
+.quiz-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 26px; cursor: pointer; color: #999; padding: 4px; }
+.quiz-box h4 { color: var(--ink); margin-bottom: 6px; font-size: 15px; }
+.quiz-word { font-size: 30px; color: var(--prince-color); font-weight: bold; margin: 12px 0; }
+.quiz-hint { color: #888; font-size: 13px; margin-bottom: 14px; font-style: italic; }
+.quiz-answer { width: 100%; padding: 12px; border: 2px solid #d4a96a; border-radius: 10px; font-size: 16px; text-align: center; outline: none; -webkit-appearance: none; background: white; }
+.quiz-answer:focus { border-color: var(--gold); }
+.quiz-btn { margin-top: 14px; padding: 12px 28px; background: var(--prince-color); color: white; border: none; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: bold; -webkit-appearance: none; min-width: 100px; font-family: Georgia, serif; }
+.quiz-btn:hover { background: #2a5aaa; }
+.quiz-result { margin-top: 12px; font-size: 18px; min-height: 26px; font-weight: bold; }
+
+/* ════════════════════════════════════════
+   MOBILE  ≤ 700px : switch to tab layout
+   ════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .header::before, .header::after { display: none; }
+
+  /* show tab bar */
+  .mobile-tabs { display: flex; }
+
+  /* read-all bar pushed below tab bar */
+  .readall-bar { top: 50px; }
+
+  /* hide PC layout */
+  .pc-layout { display: none !important; }
+
+  /* show mobile panels */
+  .mobile-panel { display: none; background: var(--parchment); flex: 1; }
+  .mobile-panel.active { display: block; }
+  .mobile-panel-inner { padding: 14px 14px 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚜ The Prince and the Pauper ⚜</h1>
+  <div class="sub">왕자와 거지 — A Play for Two Performers</div>
+</div>
+
+<!-- MOBILE ONLY: tab bar -->
+<div class="mobile-tabs">
+  <button class="mobile-tab-btn active" id="mtab-script" onclick="mTab('script')">📜 대본</button>
+  <button class="mobile-tab-btn" id="mtab-vocab" onclick="mTab('vocab')">📖 단어장</button>
+  <button class="mobile-tab-btn" id="mtab-quiz"  onclick="mTab('quiz')">✏️ 테스트</button>
+</div>
+
+<!-- READ-ALL BAR (inside PC layout on PC; floats at top on mobile via script panel) -->
+<div class="readall-bar" id="readallBar">
+  <button class="readall-btn play" id="readAllBtn" onclick="toggleReadAll()">▶ 전체 대본 읽기</button>
+  <div class="readall-progress-wrap" id="progressWrap"><div class="readall-progress-bar" id="progressBar"></div></div>
+  <div class="readall-status" id="readallStatus"></div>
+</div>
+
+<!-- ══════════════════════════
+     PC LAYOUT
+════════════════════════════ -->
+<div class="pc-layout">
+
+  <!-- LEFT: script -->
+  <div class="script-col" id="pcScript">
+    <div class="tts-hint">🔊 대사 줄을 클릭하면 영어 발음을 들을 수 있어요!</div>
+    <div id="legendPC" class="legend">
+      <div class="legend-item prince">👑 PRINCE EDWARD</div>
+      <div class="legend-item tom">🧒 TOM CANTY</div>
+      <div class="legend-item both">🎭 BOTH</div>
+      <div class="legend-item stage">📜 Stage</div>
+    </div>
+    <div id="scriptContent"></div>
+  </div>
+
+  <!-- RIGHT: vocab + quiz -->
+  <div class="sidebar-col">
+    <div class="sidebar-box sticky-box">
+      <div class="vocab-box-title">📖 단어장</div>
+      <input class="vocab-search" id="vocabSearchPC" type="search" placeholder="🔍 단어 검색..." oninput="filterVocab('PC')" autocomplete="off" />
+      <div class="vocab-list" id="vocabListPC"></div>
+      <button class="quiz-trigger-btn" style="margin-top:14px;" onclick="startQuiz()">✏️ 단어 테스트</button>
+      <div class="score-badge" id="scoreBadge"></div>
+    </div>
+  </div>
+
+</div><!-- /pc-layout -->
+
+<!-- ══════════════════════════
+     MOBILE PANELS
+════════════════════════════ -->
+<div class="mobile-panel active" id="mpanel-script">
+  <div class="mobile-panel-inner">
+    <div class="tts-hint">🔊 대사 줄을 탭하면 영어 발음을 들을 수 있어요!</div>
+    <div class="legend">
+      <div class="legend-item prince">👑 PRINCE</div>
+      <div class="legend-item tom">🧒 TOM</div>
+      <div class="legend-item both">🎭 BOTH</div>
+      <div class="legend-item stage">📜 Stage</div>
+    </div>
+    <div id="scriptContentMobile"></div>
+  </div>
+</div>
+
+<div class="mobile-panel" id="mpanel-vocab">
+  <div class="mobile-panel-inner">
+    <input class="vocab-search" id="vocabSearchMobile" type="search" placeholder="🔍 단어 검색..." oninput="filterVocab('Mobile')" autocomplete="off" />
+    <div class="vocab-list" id="vocabListMobile"></div>
+  </div>
+</div>
+
+<div class="mobile-panel" id="mpanel-quiz">
+  <div class="mobile-panel-inner">
+    <button class="quiz-trigger-btn" onclick="startQuiz()">✏️ 단어 테스트 시작!</button>
+    <div class="score-badge" id="scoreBadgeMobile" style="display:none;margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- QUIZ MODAL -->
+<div class="quiz-popup" id="quizPopup">
+  <div class="quiz-box">
+    <button class="quiz-close" onclick="closeQuiz()">✕</button>
+    <h4>✏️ 영어 단어 테스트</h4>
+    <div class="quiz-word" id="quizWord"></div>
+    <div class="quiz-hint" id="quizHint"></div>
+    <input class="quiz-answer" id="quizInput" type="text" placeholder="한국어 뜻을 입력하세요"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')checkAnswer()" />
+    <br>
+    <button class="quiz-btn" id="quizBtn" onclick="checkAnswer()">확인</button>
+    <div class="quiz-result" id="quizResult"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+var vocab = [
+  ["afraid","두려워하여","두렵다","겁나다","무섭다","두려운","겁먹은","무서운","겁나는"],
+  ["guards","경비원","경호원","수비대","파수꾼","경비","가드","보초"],
+  ["highness","전하","전하님","폐하","왕자님"],
+  ["crowded","붐비는","붐비다","복잡한","복잡하다","사람 많은","혼잡한"],
+  ["splash","…에 튀다","튀기다","튀다","첨벙","첨벙거리다","물 튀기다","물 뿌리다"],
+  ["on purpose","일부러","의도적으로","고의로","작정하고"],
+  ["without","~없이","없이","빠뜨리고"],
+  ["trouble","혼나다","문제","말썽","곤란","혼","혼나","어려움","탈"],
+  ["covered","덮인","덮다","뒤덮인","뒤집어쓴"],
+  ["world","세계","세상","지구","온 세상"],
+  ["speck","작은 얼룩","얼룩","작은 점","흠집","티끌","점","먼지"],
+  ["servants","하인","시종","일꾼","종","심부름꾼","시중꾼"],
+  ["rush","서두르다","달려가다","급하다","급히","빨리가다","달려들다","뛰다"],
+  ["scrub","문질러 닦다","문지르다","닦다","박박 닦다","세게 닦다"],
+  ["perfect","완벽한","완벽하다","완전한","완전하다","훌륭한"],
+  ["trade","거래","바꾸다","교환하다","교환","맞바꾸다","거래하다","트레이드"],
+  ["swapped","바꾸다","교환하다","교체하다","맞바꾸다","스왑","바꿔치기"],
+  ["impossible","불가능한","불가능하다","될 리 없다","말도 안 된다","안 돼","안 되는"],
+  ["royal","국왕의","왕의","왕실의","왕족의","황실의","왕","왕족"],
+  ["important","중요한","중요하다","중요","대단한","소중한","높은"],
+  ["regular","평범한","평범하다","보통의","보통","일반적인","일반","흔한"],
+  ["grumpy","심술난","심술","불만","투덜거리다","짜증난","기분 나쁜","뚱한"],
+  ["usually","보통","대개","일반적으로","늘","항상","평소에","주로"],
+  ["fancy","화려한","화려하다","멋진","고급스러운","예쁜","근사한","훌륭한"],
+  ["pretend","~인 척하다","척하다","인 척","흉내 내다","가장하다","연기하다","꾸미다"],
+  ["boss","상사","보스","사장","주인","책임자","리더","왕초","으뜸"],
+  ["freedom","자유","자유롭다","해방","자유로움","풀려나다"],
+  ["puddle","물웅덩이","웅덩이","물 웅덩이","진흙","수렁"],
+  ["dare","감히","용기","대담하게","도전하다","무릅쓰다"],
+  ["beggar","거지","걸인","구걸하는 사람","부랑자"],
+  ["nobody","아무도","아무것도","아무","존재감 없는","무명","보잘것없는","별것 없는"],
+  ["latin","라틴어","라틴","고전어"],
+  ["history","역사","히스토리","과거","내력"],
+  ["breathe","숨을 쉬다","숨쉬다","호흡하다","호흡","숨","숨쉬기"],
+  ["pauper","빈민","가난뱅이","가난한 사람","거지","빈자","빈곤자"]
+];
+
+// ── SCRIPT HTML ───────────────────────────────────────────────
+function vk(word, label) {
+  return '<span class="vk" onclick="showVocab(\''+word+'\')">'+(label||word)+'</span>';
+}
+var scriptHTML = [
+  {type:'chars'},
+  {type:'divider'},
+  {type:'scene', text:'🎭 Scene 1 — The Meeting 만남'},
+  {type:'stage', text:'The PRINCE is looking out a window. TOM stands by the door, looking around with wide eyes. He looks nervous.'},
+  {type:'prince', text:'Don\'t be '+vk('afraid')+', boy. Come closer. My '+vk('guards')+' were being mean to you, weren\'t they?'},
+  {type:'tom', stage:'(Bowing very low)', text:'Yes, Your '+vk('highness','Highness')+'. But I don\'t mind. I just wanted to see a real Prince. I\'ve dreamed about this my whole life!'},
+  {type:'prince', text:'Is it hard living out there in the city? Tell me about your life.'},
+  {type:'tom', text:'Well, it\'s '+vk('crowded')+'. My house is small, and sometimes I\'m hungry. But I get to play in the river with my friends! We '+vk('splash')+' in the mud and have races all day long.'},
+  {type:'prince', stage:'(Surprised)', text:'You play in the mud? '+vk('on purpose','On purpose')+'? '+vk('without','Without')+' getting in '+vk('trouble')+'?'},
+  {type:'tom', text:'Oh, yes! We get '+vk('covered')+' from head to toe. It\'s the best fun in the '+vk('world')+'!'},
+  {type:'prince', stage:'(Sighing)', text:'I wish I could do that. If I get one '+vk('speck')+' of dirt on my shoes, three '+vk('servants')+' '+vk('rush')+' over to '+vk('scrub')+' them. I have to sit still and be &ldquo;'+vk('perfect')+'&rdquo; all day. It\'s so boring!'},
+  {type:'tom', text:'Boring? But you get to eat cake and wear gold! I\'d '+vk('trade')+' my mud for your cake any day.'},
+  {type:'divider'},
+  {type:'scene', text:'🎭 Scene 2 — The Mirror 거울'},
+  {type:'prince', stage:'(Looking at TOM closely)', text:'Wait a minute. Stand right here. Next to the mirror.'},
+  {type:'stage', text:'TOM moves next to the PRINCE. They both look into the mirror together.'},
+  {type:'prince', text:'Do you see that, Tom? Look at our faces.'},
+  {type:'tom', text:'Whoa... we have the same nose. And the same eyes!'},
+  {type:'prince', text:'We look like twins! If we '+vk('swapped')+' clothes, no one would know who was who.'},
+  {type:'tom', stage:'(Laughing)', text:'That\'s '+vk('impossible')+'. You\'re a Prince! I\'m just... me.'},
+  {type:'prince', stage:'(Excitedly taking off his fancy jacket)', text:'Let\'s try it! Just for a minute. Give me your old coat and take my velvet one.'},
+  {type:'tom', text:'Are you sure? I might get in big trouble for wearing '+vk('royal')+' clothes!'},
+  {type:'prince', text:'I\'m the Prince &mdash; I say it\'s okay! Come on, hurry!'},
+  {type:'stage', text:'They pretend to swap clothes. They turn back to the mirror. TOM looks fancy; the PRINCE looks like a street kid.'},
+  {type:'tom', stage:'(Whispering)', text:'I look... '+vk('important')+'. This coat is heavy!'},
+  {type:'prince', stage:'(Jumping around)', text:'And I feel free! I look like a '+vk('regular')+' boy! I\'m going to run outside and see if the '+vk('guards')+' can catch me.'},
+  {type:'tom', stage:'(Scared)', text:'Wait! Don\'t leave me here! What if the King comes in? What do I say?'},
+  {type:'prince', text:'Just act '+vk('grumpy')+' and don\'t talk to anyone. That\'s what I '+vk('usually')+' do! I\'ll be back in ten minutes, I promise.'},
+  {type:'tom', text:'Ten minutes? I don\'t even know how to sit in this '+vk('fancy')+' chair!'},
+  {type:'prince', stage:'(Running to the door, laughing)', text:'Just '+vk('pretend')+' you\'re the '+vk('boss')+' of everything! I\'ll be right back, &ldquo;Your Highness!&rdquo;'},
+  {type:'divider'},
+  {type:'scene', text:'🎭 Scene 3 — Two Worlds 두 세계'},
+  {type:'stage', text:'The PRINCE is on the RIGHT. TOM is on the LEFT.'},
+  {type:'prince', stage:'(Running to the right, cheering)', text:vk('freedom','Freedom')+'! No more lessons! No more sitting still! I\'m going to find the biggest mud '+vk('puddle')+' in London and jump right in!'},
+  {type:'tom', stage:'(On the left, sitting in a fancy chair)', text:'This is it! I\'m a Prince! No more hungry belly. No more cold floors. I\'ll just eat cake and nap all day.'},
+  {type:'stage', text:'The PRINCE reaches the &ldquo;gate&rdquo; on the right. He stops suddenly and looks up at an imaginary Guard.'},
+  {type:'prince', stage:'(Acting brave)', text:'Ho there, Guard! Open the gates. I am Edward, Prince of Wales, and I wish to go for a walk!'},
+  {type:'stage', text:'The PRINCE pauses, then recoils as if he\'s been shoved. He stumbles back and falls.'},
+  {type:'prince', stage:'(To the imaginary Guard)', text:'How '+vk('dare')+' you push me! I am the King\'s son! Why are you laughing? Stop it! I\'m not a '+vk('beggar')+'! Look at my face... don\'t you see who I am?'},
+  {type:'stage', text:'The PRINCE looks at his dirty sleeves and his bare feet. He looks scared and cold.'},
+  {type:'prince', text:'They don\'t know me. Without my gold, I\'m just... a '+vk('nobody')+'. It\'s so cold out here.'},
+  {type:'stage', text:'Switch to the LEFT side. Tom hears knocking. He jumps out of his chair.'},
+  {type:'tom', stage:'(To the door)', text:'Uhh... come back later! I\'m busy... being royal!'},
+  {type:'stage', text:'Hears knocking again.'},
+  {type:'tom', stage:'(To the imaginary person at the door)', text:'Three hours of '+vk('latin','Latin')+'? And then a '+vk('history')+' test? But I can\'t even read! And what do you mean the King is angry? I don\'t want to see a King! I\'m just a boy!'},
+  {type:'stage', text:'TOM backs away from the door, looking trapped in his heavy, itchy coat.'},
+  {type:'tom', stage:'(To himself)', text:'Being a Prince is like being in a golden cage. I can\'t even '+vk('breathe')+'!'},
+  {type:'divider'},
+  {type:'scene', text:'🎭 Final Scene 마지막 장면'},
+  {type:'stage', text:'Both move to center. They look at the audience at the same time.'},
+  {type:'prince', text:'Everything is too hard out here!'},
+  {type:'tom', text:'Everything is too scary in here!'},
+  {type:'both', text:'I WANT TO GO HOME!!', big:true}
+];
+
+function buildScriptHTML() {
+  var html = '';
+  scriptHTML.forEach(function(item) {
+    if (item.type === 'chars') {
+      html += '<div class="section-title">📋 Characters 등장인물</div>';
+      html += '<div class="characters-block"><strong>CAST 배역</strong>';
+      html += '<div class="char-entry"><span class="char-name-badge prince">👑 PRINCE EDWARD</span> The King\'s son. Wears '+vk('fancy')+' clothes but is bored of being a Prince.</div>';
+      html += '<div class="char-entry"><span class="char-name-badge tom">🧒 TOM CANTY</span> A poor boy from the streets. Wears rags but has big dreams.</div></div>';
+      html += '<div class="setting-block"><strong>📍 Setting 배경</strong>A '+vk('fancy')+' room in the Palace with a large mirror.</div>';
+    } else if (item.type === 'divider') {
+      html += '<div class="divider"></div>';
+    } else if (item.type === 'scene') {
+      html += '<div class="section-title">'+item.text+'</div>';
+    } else if (item.type === 'stage') {
+      html += '<div class="line stage"><span class="speaker stage">STAGE</span><span class="stage-dir">'+item.text+'</span></div>';
+    } else {
+      var cls = item.type; // prince / tom / both
+      var spkLabel = cls === 'prince' ? '👑 PRINCE' : cls === 'tom' ? '🧒 TOM' : '🎭 BOTH';
+      var txtStyle = item.big ? ' style="font-size:17px;font-weight:bold;color:var(--both-color);"' : '';
+      html += '<div class="line '+cls+'">';
+      html += '<span class="tts-icon">🔊</span>';
+      html += '<span class="speaker '+cls+'">'+spkLabel+'</span>';
+      if (item.stage) html += '<span class="stage-dir">'+item.stage+'</span>';
+      html += '<span class="dialogue-text"'+txtStyle+'>'+item.text+'</span>';
+      html += '</div>';
+    }
+  });
+  return html;
+}
+
+// Inject script into both PC and mobile
+var built = buildScriptHTML();
+document.getElementById('scriptContent').innerHTML = built;
+document.getElementById('scriptContentMobile').innerHTML = built;
+
+// Re-attach TTS listeners after injection
+attachTTS();
+
+// ── MOBILE TABS ───────────────────────────────────────────────
+function mTab(name) {
+  ['script','vocab','quiz'].forEach(function(n) {
+    document.getElementById('mtab-'+n).classList.toggle('active', n===name);
+    document.getElementById('mpanel-'+n).classList.toggle('active', n===name);
+  });
+  if (name !== 'script') stopReadAll();
+  window.scrollTo(0, 0);
+}
+
+// ── VOCAB ─────────────────────────────────────────────────────
+function renderVocab(suffix, filter) {
+  var f = (filter||'').toLowerCase();
+  var list = document.getElementById('vocabList'+suffix);
+  if (!list) return;
+  list.innerHTML = '';
+  vocab.filter(function(r){ return r[0].indexOf(f)>=0 || r[1].indexOf(f)>=0; })
+    .forEach(function(r) {
+      var d = document.createElement('div');
+      d.className = 'vocab-item';
+      d.id = 'vi'+suffix+'-'+r[0].replace(' ','-');
+      var word = r[0];
+      d.innerHTML = '<span class="vocab-en">'+word+'</span><span class="vocab-kr">'+r[1]+'</span><button class="vocab-speak-btn" title="발음 듣기" onclick="speakWord(\''+word.replace(/'/g,"\\'")+ '\',this)">🔊</button>';
+      list.appendChild(d);
+    });
+}
+function filterVocab(suffix) {
+  var el = document.getElementById('vocabSearch'+suffix);
+  renderVocab(suffix, el ? el.value : '');
+}
+
+// Show vocab – on mobile: switch to vocab tab; on PC: highlight in sidebar
+function showVocab(word) {
+  var isMobile = window.innerWidth <= 700;
+  if (isMobile) {
+    mTab('vocab');
+    document.getElementById('vocabSearchMobile').value = '';
+    renderVocab('Mobile', '');
+    setTimeout(function() { highlightVocab('Mobile', word); }, 150);
+  } else {
+    document.getElementById('vocabSearchPC').value = '';
+    renderVocab('PC', '');
+    setTimeout(function() { highlightVocab('PC', word); }, 50);
+  }
+}
+function highlightVocab(suffix, word) {
+  var el = document.getElementById('vi'+suffix+'-'+word.replace(' ','-'));
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('highlight');
+    setTimeout(function(){ el.classList.remove('highlight'); }, 2500);
+  }
+}
+
+// Init both lists
+renderVocab('PC', '');
+renderVocab('Mobile', '');
+
+// ── TTS ───────────────────────────────────────────────────────
+var currentLine = null, isReadingAll = false, readAllLines = [], readAllIdx = 0;
+
+function attachTTS() {
+  document.querySelectorAll('.line.prince, .line.tom, .line.both').forEach(function(line) {
+    line.addEventListener('click', function() {
+      if (isReadingAll) stopReadAll();
+      speakLine(line, null);
+    });
+  });
+}
+
+function getLineText(el) {
+  var d = el.querySelector('.dialogue-text');
+  return d ? (d.innerText || d.textContent || '').trim() : '';
+}
+
+function speakLine(el, cb) {
+  if (!window.speechSynthesis) { if(cb) cb(); return; }
+  window.speechSynthesis.cancel();
+  if (!cb && currentLine === el) {
+    currentLine.classList.remove('speaking'); currentLine = null; return;
+  }
+  var txt = getLineText(el);
+  if (!txt) { if(cb) cb(); return; }
+  var u = new SpeechSynthesisUtterance(txt);
+  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1;
+  var vv = window.speechSynthesis.getVoices().filter(function(v){ return v.lang.startsWith('en'); });
+  if (vv.length) u.voice = vv[0];
+  if (currentLine) currentLine.classList.remove('speaking');
+  currentLine = el; el.classList.add('speaking');
+  if (cb) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  u.onend = u.onerror = function() {
+    el.classList.remove('speaking');
+    if (currentLine === el) currentLine = null;
+    if (cb) cb();
+  };
+  window.speechSynthesis.speak(u);
+}
+
+// ── VOCAB TTS ─────────────────────────────────────────────────
+var currentVocabBtn = null;
+function speakWord(word, btn) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  if (currentVocabBtn) { currentVocabBtn.classList.remove('speaking'); currentVocabBtn = null; }
+  if (currentLine) { currentLine.classList.remove('speaking'); currentLine = null; }
+  var u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1;
+  var vv = window.speechSynthesis.getVoices().filter(function(v){ return v.lang.startsWith('en'); });
+  if (vv.length) u.voice = vv[0];
+  btn.classList.add('speaking');
+  currentVocabBtn = btn;
+  u.onend = u.onerror = function() {
+    btn.classList.remove('speaking');
+    if (currentVocabBtn === btn) currentVocabBtn = null;
+  };
+  window.speechSynthesis.speak(u);
+}
+
+
+function toggleReadAll() { isReadingAll ? stopReadAll() : startReadAll(); }
+
+function startReadAll() {
+  // On mobile use mobile panel lines; on PC use PC script lines
+  var isMobile = window.innerWidth <= 700;
+  var scope = isMobile ? '#scriptContentMobile' : '#scriptContent';
+  readAllLines = Array.from(document.querySelectorAll(scope+' .line.prince, '+scope+' .line.tom, '+scope+' .line.both'));
+  readAllIdx = 0; isReadingAll = true;
+  var btn = document.getElementById('readAllBtn');
+  btn.textContent = '⏹ 중지'; btn.className = 'readall-btn stop';
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('readallStatus').classList.add('show');
+  readNextLine();
+}
+
+function stopReadAll() {
+  isReadingAll = false;
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (currentLine) { currentLine.classList.remove('speaking'); currentLine = null; }
+  var btn = document.getElementById('readAllBtn');
+  btn.textContent = '▶ 전체 대본 읽기'; btn.className = 'readall-btn play';
+  document.getElementById('progressWrap').classList.remove('show');
+  document.getElementById('readallStatus').classList.remove('show');
+  document.getElementById('progressBar').style.width = '0%';
+}
+
+function readNextLine() {
+  if (!isReadingAll) return;
+  if (readAllIdx >= readAllLines.length) {
+    stopReadAll();
+    var btn = document.getElementById('readAllBtn');
+    btn.textContent = '✅ 완료!';
+    setTimeout(function(){ btn.textContent = '▶ 전체 대본 읽기'; }, 2500);
+    return;
+  }
+  var tot = readAllLines.length;
+  document.getElementById('progressBar').style.width = Math.round((readAllIdx/tot)*100) + '%';
+  document.getElementById('readallStatus').textContent = (readAllIdx+1) + ' / ' + tot;
+  var line = readAllLines[readAllIdx++];
+  speakLine(line, function(){ if(isReadingAll) setTimeout(readNextLine, 350); });
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = function(){ window.speechSynthesis.getVoices(); };
+  window.speechSynthesis.getVoices();
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────
+var quizQueue = [], quizCurrent = null, qScore = 0, qTotal = 0;
+
+function startQuiz() {
+  quizQueue = vocab.slice().sort(function(){ return Math.random()-0.5; });
+  qScore = 0; qTotal = 0;
+  document.getElementById('scoreBadge').style.display = 'none';
+  var mb = document.getElementById('scoreBadgeMobile');
+  if (mb) mb.style.display = 'none';
+  nextQuiz();
+}
+
+function nextQuiz() {
+  if (quizQueue.length === 0) {
+    document.getElementById('quizWord').textContent = '🎉 완료!';
+    document.getElementById('quizHint').textContent = '최종 점수: ' + qScore + ' / ' + qTotal;
+    document.getElementById('quizInput').style.display = 'none';
+    document.getElementById('quizBtn').textContent = '다시 하기';
+    document.getElementById('quizBtn').onclick = startQuiz;
+    var badge = '🏆 Quiz 점수: ' + qScore + ' / ' + qTotal;
+    document.getElementById('scoreBadge').textContent = badge;
+    document.getElementById('scoreBadge').style.display = 'block';
+    var mb = document.getElementById('scoreBadgeMobile');
+    if (mb) { mb.textContent = badge; mb.style.display = 'block'; }
+    return;
+  }
+  quizCurrent = quizQueue.pop();
+  document.getElementById('quizWord').textContent = quizCurrent[0];
+  document.getElementById('quizHint').textContent = '이 단어의 한국어 뜻은? (어떤 표현이든 OK!)';
+  document.getElementById('quizInput').value = '';
+  document.getElementById('quizInput').style.display = 'block';
+  document.getElementById('quizResult').textContent = '';
+  document.getElementById('quizBtn').textContent = '확인';
+  document.getElementById('quizBtn').onclick = checkAnswer;
+  document.getElementById('quizPopup').classList.add('show');
+  setTimeout(function(){ document.getElementById('quizInput').focus(); }, 150);
+}
+
+function norm(s) { return s.replace(/[~…·\s\-]/g,'').replace(/하다$/,'').replace(/다$/,'').toLowerCase(); }
+
+function checkAnswer() {
+  var ans = document.getElementById('quizInput').value.trim();
+  if (!ans) return;
+  var na = norm(ans);
+  qTotal++;
+  var ok = quizCurrent.slice(1).some(function(a){ var n=norm(a); return n===na||n.indexOf(na)>=0||na.indexOf(n)>=0; });
+  if (ok) {
+    qScore++;
+    document.getElementById('quizResult').textContent = '⭐ 정답!';
+    document.getElementById('quizResult').style.color = '#2a8a2a';
+  } else {
+    document.getElementById('quizResult').innerHTML = '❌ 틀렸어요<br><small style="color:#888;font-size:12px">참고 뜻: '+quizCurrent[1]+'</small>';
+    document.getElementById('quizResult').style.color = '#cc2020';
+  }
+  document.getElementById('quizBtn').textContent = '다음 →';
+  document.getElementById('quizBtn').onclick = nextQuiz;
+}
+
+function closeQuiz() { document.getElementById('quizPopup').classList.remove('show'); }
+
+// ── READALL BAR POSITION ──────────────────────────────────────
+// On mobile the bar is inside the script panel flow; handled by CSS sticky
+// On PC it's at the top of the viewport area above the layout
+(function positionReadAllBar() {
+  var bar = document.getElementById('readallBar');
+  var pcLayout = document.querySelector('.pc-layout');
+  if (window.innerWidth > 700) {
+    // insert bar before pc-layout
+    pcLayout.parentNode.insertBefore(bar, pcLayout);
+  } else {
+    // insert bar after mobile tabs, before mobile panels
+    var mScript = document.getElementById('mpanel-script');
+    mScript.parentNode.insertBefore(bar, mScript);
+  }
+})();
+</script>
+</body>
+</html>
